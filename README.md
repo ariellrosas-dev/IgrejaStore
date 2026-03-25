@@ -1,16 +1,29 @@
-# React + Vite
+# ChurchGear
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sistema de gestão de vendas de camisas para igrejas.
 
-Currently, two official plugins are available:
+## Funcionalidades
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Pedidos**: Registro e acompanhamento de vendas
+- **Estoque**: Controle de modelos, tamanhos e quantidades
+- **Fluxo de Caixa**: Registro de entradas e saídas
+- **Relatórios**: Geração de relatórios em PDF
+- **Configurações**: Gerenciamento de líderes e modelos de camisas
 
-## React Compiler
+## Tecnologias
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React + Vite
+- Dexie.js (IndexedDB)
+- Lucide React (ícones)
+- CSS moderno com design system
 
-## Expanding the ESLint configuration
+## Como executar
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm install
+npm run dev
+```
+
+## License
+
+MIT
