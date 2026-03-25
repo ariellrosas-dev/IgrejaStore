@@ -5,7 +5,7 @@ import {
   Printer, ChevronLeft, ChevronRight, AlertTriangle, CreditCard,
   Smartphone, Check, Clock, PackageCheck, TrendingUp, Menu,
   ChevronDown, ChevronUp, ArrowUpRight, ArrowDownRight,
-  Settings, Save, Store, Search, Cross, Users, HelpCircle
+  Settings, Save, Store, Search, Cross, Users, HelpCircle, User
 } from 'lucide-react';
 import {
   getLeaders, addLeader as dbAddLeader, deleteLeader as dbDeleteLeader,
@@ -13,6 +13,7 @@ import {
   getOrders, addOrder as dbAddOrder, updateOrderStatus as dbUpdateOrderStatus, deleteOrder as dbDeleteOrder,
   getCashFlow, addCashFlow as dbAddCashFlow,
   getSettings, saveSettings as dbSaveSettings,
+  getClients, addClient as dbAddClient, updateClient as dbUpdateClient, deleteClient as dbDeleteClient,
   initSettings
 } from './lib/database';
 
@@ -278,6 +279,7 @@ export default function App() {
     { id: 'dashboard', label: 'Dashboard',      icon: LayoutDashboard },
     { id: 'new-order', label: 'Novo Pedido',    icon: Plus },
     { id: 'orders',    label: 'Pedidos',         icon: ShoppingCart },
+    { id: 'clients',   label: 'Clientes',        icon: Users },
     { id: 'cashflow',  label: 'Fluxo de Caixa', icon: DollarSign },
     { id: 'stock',     label: 'Estoque',         icon: Package },
     { id: 'reports',   label: 'Relatórios',      icon: FileText },
@@ -298,6 +300,14 @@ export default function App() {
           </div>
         </div>
         <nav className="sidebar__nav">
+          <button
+            className="nav-btn"
+            onClick={() => window.location.href = '/loja.html'}
+            style={{ background: '#c8922a', color: 'white', marginBottom: 8 }}
+          >
+            <Store size={17} />
+            <span>Acessar Loja</span>
+          </button>
           {nav.map(n => (
             <button
               key={n.id}
@@ -335,6 +345,14 @@ export default function App() {
                 {stats.pendingCount} pendência{stats.pendingCount > 1 ? 's' : ''}
               </button>
             )}
+            <button 
+              onClick={() => window.location.href = '/'} 
+              className="btn btn--ghost btn--sm"
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <User size={16} />
+              Sair
+            </button>
           </div>
         </header>
 
@@ -342,6 +360,7 @@ export default function App() {
           {view === 'dashboard' && <DashboardView stats={stats} orders={orders} lowStock={lowStock} setView={setView} />}
           {view === 'new-order' && <NewOrderView models={models} setModels={setModels} orders={orders} setOrders={setOrders} setCashFlow={setCashFlow} toast={toast} setView={setView} />}
           {view === 'orders'    && <OrdersView orders={orders} setOrders={setOrders} models={models} setModels={setModels} setCashFlow={setCashFlow} toast={toast} />}
+          {view === 'clients'   && <ClientsView toast={toast} orders={orders} />}
           {view === 'cashflow'  && <CashFlowView cashFlow={cashFlow} setCashFlow={setCashFlow} toast={toast} />}
           {view === 'stock'     && <StockView models={models} setModels={setModels} orders={orders} toast={toast} />}
           {view === 'reports'   && <ReportsView orders={orders} models={models} cashFlow={cashFlow} />}
@@ -1459,7 +1478,150 @@ function StockView({ models, setModels, orders, toast }) {
   );
 }
 
-/* ─── CONFIGURAÇÕES ──────────────────────────────────────────────────────── */
+/* ─── CLIENTES ─────────────────────────────────────────────────────────────── */
+function ClientsView({ toast, orders }) {
+  const [clients, setClients] = useState([]);
+  const [search, setSearch] = useState('');
+  const [modal, setModal] = useState(null);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', cpf: '', address: '' });
+
+  useEffect(() => {
+    const loadClients = async () => {
+      const clientsData = await getClients();
+      setClients(clientsData);
+    };
+    loadClients();
+  }, []);
+
+  const filteredClients = useMemo(() => {
+    if (!search) return clients;
+    const q = search.toLowerCase();
+    return clients.filter(c => 
+      c.name.toLowerCase().includes(q) || 
+      (c.email && c.email.toLowerCase().includes(q)) || 
+      c.phone.includes(q) ||
+      (c.cpf && c.cpf.includes(q))
+    );
+  }, [clients, search]);
+
+  const getClientOrders = (clientId) => {
+    return orders.filter(o => o.buyerName === clients.find(c => c.id === clientId)?.name);
+  };
+
+  const save = async () => {
+    if (!form.name.trim() || !form.phone.trim()) {
+      toast('Preencha nome e telefone', 'error');
+      return;
+    }
+    if (modal?.id) {
+      await dbUpdateClient(modal.id, form);
+      setClients(p => p.map(c => c.id === modal.id ? { ...c, ...form } : c));
+      toast('Cliente atualizado!', 'success');
+    } else {
+      const id = await dbAddClient(form);
+      setClients(p => [...p, { ...form, id }]);
+      toast('Cliente cadastrado!', 'success');
+    }
+    setModal(null);
+    setForm({ name: '', email: '', phone: '', cpf: '', address: '' });
+  };
+
+  const remove = async (id) => {
+    if (!window.confirm('Excluir este cliente?')) return;
+    await dbDeleteClient(id);
+    setClients(p => p.filter(c => c.id !== id));
+    toast('Cliente excluído', 'warning');
+  };
+
+  return (
+    <>
+      <div className="filters-bar">
+        <div className="filter-field filter-field--wide" style={{ position: 'relative' }}>
+          <input className="filter-input" style={{ paddingLeft: 38 }} placeholder="Buscar clientes..." value={search} onChange={e => setSearch(e.target.value)} />
+          <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-4)' }} />
+        </div>
+        <button className="btn btn--primary btn--sm" onClick={() => { setModal({}); setForm({ name: '', email: '', phone: '', cpf: '', address: '' }); }}>
+          <Plus size={14} /> Novo Cliente
+        </button>
+      </div>
+
+      <p className="results-count">{filteredClients.length} cliente(s) encontrado(s)</p>
+
+      <SectionCard noPad>
+        <div className="table-scroll">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Telefone</th>
+                <th>CPF</th>
+                <th>Compras</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredClients.map(c => (
+                <tr key={c.id}>
+                  <td className="text-strong">{c.name}</td>
+                  <td className="text-muted">{c.email || '—'}</td>
+                  <td>{c.phone}</td>
+                  <td className="text-muted">{c.cpf || '—'}</td>
+                  <td>{getClientOrders(c.id).length}</td>
+                  <td>
+                    <div className="row-actions">
+                      <button className="icon-btn" title="Editar" onClick={() => { setModal(c); setForm({ name: c.name, email: c.email || '', phone: c.phone, cpf: c.cpf || '', address: c.address || '' }); }}><Edit size={15} /></button>
+                      <button className="icon-btn icon-btn--danger" title="Excluir" onClick={() => remove(c.id)}><Trash2 size={15} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredClients.length === 0 && (
+                <tr><td colSpan={6} className="empty-row">Nenhum cliente encontrado</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </SectionCard>
+
+      {modal !== null && (
+        <Modal title={modal.id ? 'Editar Cliente' : 'Novo Cliente'} onClose={() => setModal(null)} footer={
+          <>
+            <button className="btn btn--ghost" onClick={() => setModal(null)}>Cancelar</button>
+            <button className="btn btn--primary" onClick={save}><Save size={14} /> Salvar</button>
+          </>
+        }>
+          <div className="field">
+            <label>Nome completo <span className="req">*</span></label>
+            <input value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="Ex: João Silva" />
+          </div>
+          <div className="form-row" style={{ marginTop: 14 }}>
+            <div className="field">
+              <label>Email</label>
+              <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} placeholder="email@exemplo.com" />
+            </div>
+            <div className="field">
+              <label>Telefone <span className="req">*</span></label>
+              <input value={form.phone} onChange={e => setForm({...form, phone: maskPhone(e.target.value)})} placeholder="(81) 99999-9999" />
+            </div>
+          </div>
+          <div className="form-row" style={{ marginTop: 14 }}>
+            <div className="field">
+              <label>CPF</label>
+              <input value={form.cpf} onChange={e => setForm({...form, cpf: maskCPF(e.target.value)})} placeholder="000.000.000-00" />
+            </div>
+          </div>
+          <div className="field" style={{ marginTop: 14 }}>
+            <label>Endereço</label>
+            <input value={form.address} onChange={e => setForm({...form, address: e.target.value})} placeholder="Rua, número, bairro" />
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+}
+
+/* ─── CONFIGURAÇÕES ──────────────────────────────────────────────────────────── */
 function SettingsView({ toast }) {
   const [churchName, setChurchName]       = useState('');
   const [churchAddress, setChurchAddress] = useState('');

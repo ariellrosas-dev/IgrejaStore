@@ -1881,3 +1881,75 @@ input[type=date].filter-select { padding: 0 10px; }
     margin: 0;
   }
 }
+
+/* ══════════════════════════════════════════
+   ESTILOS DA LOJA PÚBLICA
+══════════════════════════════════════════ */
+.toast {
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.toast--success { background: #15803d; }
+.toast--error { background: #dc2626; }
+.toast--info { background: #1e40af; }
+
+/* Lojastyles - independent store styles */
+.loja-container {
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.loja-header {
+  position: sticky;
+  top: 0;
+  background: #0d1117;
+  color: white;
+  padding: 12px 20px;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.loja-btn {
+  background: #0d1117;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+.loja-btn-gold {
+  background: #c8922a;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Estilos da Loja - Página Pública */
+.loja-page {
+  min-height: 100vh;
+  background: #f8f9fa;
+  font-family: system-ui, -apple-system, sans-serif;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+@media (min-width: 769px) {
+  .loja-page header,
+  .loja-page nav,
+  .loja-page .loja-container {
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+}
