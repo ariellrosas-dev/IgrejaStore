@@ -118,16 +118,6 @@ function AuthModal({ authMode, authForm, handleInputChange, handleLogin, handleR
   const phoneValid = authForm.phone.length >= 14;
   const nameValid = authForm.name.trim().length >= 2;
   
-  const getInputStyle = (isValid) => {
-    if (isValid === null) return { border: '1px solid #ddd' };
-    return isValid ? { border: '2px solid #15803d' } : { border: '2px solid #dc2626' };
-  };
-  
-  const getFeedbackIcon = (isValid) => {
-    if (isValid === null) return null;
-    return isValid ? '✓' : '✗';
-  };
-  
   return (
     <Modal title={authMode === 'login' ? 'Entrar' : 'Cadastre-se'} onClose={() => setShowAuth(false)}>
       <form onSubmit={authMode === 'login' ? handleLogin : handleRegister}>

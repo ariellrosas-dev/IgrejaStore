@@ -7,7 +7,8 @@ db.version(1).stores({
   shirt_models: '++id, name, color',
   orders: 'id, date, buyerName, paymentStatus, registeredBy',
   cash_flow: 'id, date, type, category, method',
-  settings: 'id'
+  settings: 'id',
+  clients: '++id, &email, name, phone, cpf'
 })
 
 // Inicializar configurações padrão se não existir
@@ -149,6 +150,31 @@ export const getSettings = async () => {
 
 export const saveSettings = async (settings) => {
   return await db.settings.put({ ...settings, id: 1 })
+}
+
+// ─── CLIENTES ───────────────────────────────────────────────────────────────
+
+export const getClients = async () => {
+  return await db.clients.toArray()
+}
+
+export const addClient = async (client) => {
+  return await db.clients.add({
+    name: client.name,
+    email: client.email,
+    phone: client.phone,
+    cpf: client.cpf || '',
+    address: client.address || '',
+    created_at: new Date()
+  })
+}
+
+export const updateClient = async (id, data) => {
+  return await db.clients.update(id, data)
+}
+
+export const deleteClient = async (id) => {
+  return await db.clients.delete(id)
 }
 
 export default db
